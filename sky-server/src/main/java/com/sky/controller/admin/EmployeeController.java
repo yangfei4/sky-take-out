@@ -130,4 +130,17 @@ public class EmployeeController {
         return Result.success(employee);
     }
 
+    /**
+     * 更新员工信息
+     * @param employeeDTO
+     * @return
+     */
+    @PutMapping
+    @ApiOperation("编辑员工信息")
+    public Result updateEmployee(@RequestBody EmployeeDTO employeeDTO) {
+        employeeService.update(employeeDTO);
+
+        return Result.success();
+    }
+
 }
