@@ -14,6 +14,7 @@ import com.sky.vo.EmployeeLoginVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.logging.log4j.message.ReusableMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -114,6 +115,19 @@ public class EmployeeController {
         log.info("启用禁用员工账号, {}, {}", status, id);
         employeeService.stopOrStart(status, id);
         return Result.success();
+    }
+
+    /**
+     * 根据Id查询员工
+     * @param id
+     * @return
+     */
+    @GetMapping("/{id}")
+    @ApiOperation("根据id查询员工")
+    public Result<Employee> getEmployeeById(@PathVariable Long id) {
+        Employee employee = employeeService.getById(id);
+        employee.setPassword("***");
+        return Result.success(employee);
     }
 
 }
