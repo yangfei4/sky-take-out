@@ -10,9 +10,12 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/admin/dish")
@@ -23,8 +26,12 @@ public class DishController {
     @Autowired
     private DishService dishService;
 
+    @Autowired
+    private RedisTemplate redisTemplate;
+
     @PostMapping
     @ApiOperation("添加菜品")
+    @CacheEvict(cacheNames = "dishCache", key = "#dishDTO.categoryId")
     public Result save(@RequestBody DishDTO dishDTO) {
         log.info("新增菜品中");
         dishService.saveWithFlavors(dishDTO);
@@ -51,9 +58,11 @@ public class DishController {
      */
     @DeleteMapping
     @ApiOperation("菜品删除接口")
+    @CacheEvict(cacheNames = "dishCache", allEntries = true)
     public Result delete(@RequestParam List<Long> ids) { // RequestParam can parse string to list
         log.info("开始删除菜品： {}", ids);
         dishService.deleteBatch(ids);
+
         return Result.success();
     }
 
@@ -70,10 +79,17 @@ public class DishController {
 
     @PutMapping
     @ApiOperation("更新菜品")
+    @CacheEvict(cacheNames = "dishCache", allEntries = true)
     public Result update(@RequestBody DishDTO dishDTO) {
         log.info("正在更新菜品，{}", dishDTO);
         dishService.updateWithFlavors(dishDTO);
+
         return Result.success();
+    }
+
+    private void cleanCache(String pattern) {
+        Set keys = redisTemplate.keys(pattern);
+        redisTemplate.delete(keys);
     }
 
 }
