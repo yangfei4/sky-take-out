@@ -1,5 +1,6 @@
 package com.sky.service.impl;
 
+import com.alibaba.fastjson.JSON;
 import com.sky.constant.MessageConstant;
 import com.sky.context.BaseContext;
 import com.sky.dto.OrdersSubmitDTO;
@@ -8,6 +9,7 @@ import com.sky.entity.OrderDetail;
 import com.sky.entity.Orders;
 import com.sky.entity.ShoppingCart;
 import com.sky.exception.AddressBookBusinessException;
+import com.sky.exception.OrderBusinessException;
 import com.sky.exception.ShoppingCartBusinessException;
 import com.sky.mapper.AddressBookMapper;
 import com.sky.mapper.OrderDetailMapper;
@@ -15,6 +17,7 @@ import com.sky.mapper.OrderMapper;
 import com.sky.mapper.ShoppingCartMapper;
 import com.sky.service.OrderService;
 import com.sky.vo.OrderSubmitVO;
+import com.sky.websocket.WebSocketServer;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,7 +27,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @Slf4j
@@ -41,6 +46,9 @@ public class OrderServiceImpl implements OrderService {
 
     @Autowired
     private OrderDetailMapper orderDetailMapper;
+
+    @Autowired
+    private WebSocketServer webSocketServer;
 
     /**
      * 用户提交订单
@@ -101,5 +109,25 @@ public class OrderServiceImpl implements OrderService {
                 .build();
 
         return orderSubmitVO;
+    }
+
+    /**
+     * 客户催单
+     * @param orderId
+     */
+    public void reminder(Long orderId) {
+        Orders orders = orderMapper.getById(orderId);
+
+        if (orders == null) {
+            throw new OrderBusinessException(MessageConstant.ORDER_NOT_FOUND);
+        }
+
+        Map map = new HashMap<>();
+        map.put("type", 2); // 1表示来单提醒，2表示催单提醒
+        map.put("orderId", orderId);
+        map.put("content", "订单号：" + orders.getNumber());
+
+        // 通过websocket向管理端浏览器推送消息
+        webSocketServer.sendToAllClient(JSON.toJSONString(map));
     }
 }

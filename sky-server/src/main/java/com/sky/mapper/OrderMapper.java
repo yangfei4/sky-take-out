@@ -30,4 +30,7 @@ public interface OrderMapper {
      * @param order
      */
     void update(Orders order);
+
+    @Select("select * from orders where id = #{orderId}")
+    Orders getById(Long orderId);
 }

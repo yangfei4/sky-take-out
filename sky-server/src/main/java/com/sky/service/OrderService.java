@@ -6,4 +6,6 @@ import com.sky.vo.OrderSubmitVO;
 public interface OrderService {
 
     OrderSubmitVO submit(OrdersSubmitDTO ordersSubmitDTO);
+
+    void reminder(Long orderId);
 }

@@ -9,10 +9,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController("UserOrderController")
 @RequestMapping("/user/order")
@@ -30,6 +27,15 @@ public class OrderController {
         OrderSubmitVO orderSubmitVO = orderService.submit(ordersSubmitDTO);
 
         return Result.success(orderSubmitVO);
+    }
+
+    @GetMapping("/reminder/{orderId}")
+    @ApiOperation("用户催单接口")
+    public Result  reminder(@PathVariable("orderId") Long orderId) {
+        log.info("用户催单了， {}", orderId);
+        orderService.reminder(orderId);
+
+        return Result.success();
     }
 
 }
